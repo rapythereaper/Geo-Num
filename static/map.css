@@ -1,0 +1,110 @@
+body {
+    background-color: #F5F5F5;
+  }
+  
+  nav {
+    text-align: center;
+    width : 100%;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+  }
+  
+  menu:after , menu:before {
+    display : table;
+    content : '  ';
+  }
+  
+  menu:after {
+    clear : both;
+  }
+  
+  li {
+    background-color : #fff;
+    list-style-type: none;
+    float : left;
+    margin-right : 10px;
+  }
+  
+  li a {
+    position: relative;
+    display : block;
+    text-align : center;
+    text-decoration: none;
+    width  : 62px;
+    height : 66px;
+  }
+  
+  a span {
+    display : block;
+    font-size : 32px;
+    padding : 20px 15px;
+    color   : #222;
+    position: absolute;
+    top : 0;
+    left : 0;
+    z-index : 100;
+    transition : all .2s;
+  }
+  
+  a:before {
+    display: block;
+    content : ' ';
+    position: absolute;
+    transition : all .2s;
+  }
+  
+  a:hover span {
+    color : #fff;
+    transition : all .2s;
+  }
+  
+  a:hover:before {
+    transition : all .3s;
+  }
+  
+  .c1:before{
+    background-color: #b651d8;
+  }
+  
+  .c2:before {
+    background-color: #71c55e;
+  }
+  
+  .c3:before {
+    background-color: #fab904;
+  }
+  
+  .c4:before  {
+    background-color: #e94739;
+  }
+  
+  .c5:before  {
+    background-color: #407ded;
+  }
+  
+  hr {
+    width  : 100px;
+    margin : 50px auto;
+  }
+  
+  /* Top 
+  ********************/
+  nav.top 
+  a:before {
+    top    : 0;
+    left   : 0;
+    height : 5px;
+    width : 100%;
+  }
+  
+  nav.top
+  a:hover:before {
+    height : 100%;
+  }
+
+  nav.top a:active{
+    height:100%
+  }
+  
+  

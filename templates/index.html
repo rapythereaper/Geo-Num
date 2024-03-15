@@ -1,0 +1,303 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="static/map.css">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Emoji:wght@300..700&display=swap" rel="stylesheet">
+    </head>
+    <body>
+
+        <nav class="top">
+            <menu>
+              <li>
+                <a id="mode_house" class="c2" href="#" >
+                  <span>🏠</span>
+                </a>
+              </li>
+              <li>
+                <a id="mode_road" class="c3" href="#" >
+                  <span>🛣️</span>
+                </a>
+              </li>
+
+              <li>
+                <a id="mode_compute"class="c1" href="#" >
+                  <span>▶️</span>
+                </a>
+              </li>
+
+              <li>
+                <a id="mode_undo"class="c4" href="#" >
+                  <span>↩️</span>
+                </a>
+              </li>
+              <li>
+                <a id="mode_save" class="c5" href="#" >
+                  <span>💾</span>
+                </a>
+              </li>
+            </menu>
+          </nav>
+          
+
+
+
+
+
+
+
+
+
+
+        <div id="app" style="text-align: center;">
+
+        </div>
+
+        <a id="downloadAnchorElem" style="display:none"></a>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.80.0/phaser.js"></script>
+        <script>
+            function magnitude(x1,y1,x2,y2){
+                return (x1-x2)+(y1-y2);
+            }
+            var config = {
+            type: Phaser.AUTO,
+            width: 1606,
+            height: 710,
+            parent:"app",
+
+            scene: {
+                preload: preload,
+                create: create,
+                update: update
+            }
+        };
+
+        var game = new Phaser.Game(config);
+        const center={x:config.width/2,y:config.height/2};
+        let ROADS=[]//[{start:{x:0,y:0},end:{y:config.height,x:config.width}}];
+        let HOUSE=[]//[{x:center.x,y:center.y}];
+        let isHouseMode=true;
+        let history=[];
+        function preload (){
+            this.load.image('map', '{{img_url}}');
+        }
+
+        const p1={x:0,y:0}
+        function create (){
+            let bd=this.add.image(center.x,center.y,"map").setScale(1);
+
+            this.input.keyboard.on("keyup-M",function (e) {
+                isHouseMode=!isHouseMode;
+                if(history.length==100)history.shift();
+            },this)
+
+            this.input.keyboard.on("keyup-Z",()=>{
+                let ev=history.pop();
+                if(ev){
+                    if(ev.isHouse)HOUSE.pop();
+                    else ROADS.pop();
+                    ev.destroy();
+                }
+            })
+
+            this.input.keyboard.on("keyup-S",()=>{
+                for(let i of HOUSE){
+                    let dis=Infinity;
+                    let rod=false;
+                    let projection=null;
+                    for(let j of ROADS){
+                        let d=distToSegment(i,j.start,j.end);
+                       // console.log(`\t${j.id}->${d}`)
+                        if(d.dis<dis){
+                            dis=d.dis;
+                            rod=j;
+                            projection=d.point;
+                        }
+                    }
+                    console.log(`${i.id}->${rod.id}`);
+                    console.log(`\tnum:${houseNum(i,rod.start,projection,dis)}`);
+                }
+                alert("check cosole!")
+            })
+
+            this.input.on('pointerdown', function (pointer){
+                p1.x=pointer.x;
+                p1.y=pointer.y;
+               
+            });
+            this.input.on('pointerup',(pointer)=>{
+                if(history.length==100)history.shift();
+                let ev
+                if(isHouseMode){
+                    HOUSE.push({id:HOUSE.length,x:pointer.x,y:pointer.y});
+                    ev=this.add.circle(pointer.x,pointer.y, 5,  0x6666ff);
+                    ev.isHouse=true;
+                    //circle.fillColor = 0xff0000;
+                    
+                }else{
+                    let start={x:0,y:0};
+                    let end={x:0,y:0};
+                    if(magnitude(p1.x,p1.y,pointer.x,pointer.y)>0){
+                        start={y:p1.y,x:p1.x};
+                        end={y:pointer.y,x:pointer.x};
+                    }
+                    else{
+                        start={y:pointer.y,x:pointer.x};
+                        end={y:p1.y,x:p1.x};
+                    }
+
+                    let dis=Phaser.Math.Distance.Between(start.x, start.y, end.x,end.y);
+                    if(dis<5)return;
+                    
+                    ev=this.add.line(0,0, start.x,start.y, end.x, end.y,  0x000000).setOrigin(0);
+                    ev.setLineWidth(3)
+                    ev.isHouse=false;
+                    ROADS.push({id:ROADS.length,start:start,end:end})
+                        
+                }
+                history.push(ev);
+
+            })
+
+
+        }
+
+        function update (){
+  
+        }
+
+        </script>
+        <script>
+
+
+            function sqr(x) { return x * x }
+            function dist2(v, w) { return sqr(v.x - w.x) + sqr(v.y - w.y) }
+            function distToSegmentSquared(p, v, w) {
+                var l2 = dist2(v, w);
+                if (l2 == 0) return dist2(p, v);
+                var t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
+                t = Math.max(0, Math.min(1, t));
+                let point={"x":v.x + t * (w.x - v.x), "y":v.y + t * (w.y - v.y)  };
+                return {dis:dist2(p,point),
+                        point:point};
+            }
+            function distToSegment(p, v, w) {
+                let r=distToSegmentSquared(p, v, w)
+                r.dis=Math.sqrt(r.dis);
+                return r ;
+            }
+
+
+            function left_hnum(path_dist){
+                path_dist = Math.ceil(path_dist);
+                if ( path_dist % 2 == 0 )
+                        return path_dist+1;
+                else
+                        return path_dist;
+            }
+
+            function right_hnum(path_dist){
+                path_dist = Math.ceil(path_dist)
+                if(path_dist % 2 == 0)
+                    return path_dist;
+                else
+                    return path_dist + 1;
+            }
+
+            function houseNum(house,road_start,ppoint,path_dist){
+                let azimuthA= Math.atan2(ppoint.x - house.x, ppoint.y - house.y)
+                let azimuthB= Math.atan2(ppoint.x - road_start.x, ppoint.y - road_start.y)
+                let hnum=0;
+                if((azimuthA > azimuthB) && ((azimuthA - azimuthB) < Math.pi))
+                    hnum = left_hnum(path_dist);
+                else if ((azimuthB > azimuthA) && ((azimuthB - azimuthA) < Math.PI))
+                    hnum = right_hnum(path_dist);
+                else if ((azimuthA > azimuthB) && ((azimuthA - azimuthB) > Math.PI))
+                    hnum = right_hnum(path_dist);
+                else
+                    hnum = left_hnum(path_dist);
+
+                return hnum;
+            }
+
+        </script>
+        <script>
+            document.getElementById("mode_house").onclick=()=>{
+                isHouseMode=true;
+            }
+            document.getElementById("mode_road").onclick=()=>{
+                isHouseMode=false;
+            }
+
+            document.getElementById("mode_undo").onclick=()=>{
+                let ev=history.pop();
+                if(ev){
+                    if(ev.isHouse)HOUSE.pop();
+                    else ROADS.pop();
+                    ev.destroy();
+                }
+            }
+            let house_num_lst=[];
+            document.getElementById("mode_compute").onclick=()=>{
+                let num=[];
+                if(HOUSE.length==0){
+                    alert("No house added yet!");
+                    return;
+                }
+                if(ROADS.length==0){
+                    alert("No Road added yet!");
+                    return;
+                }
+                for(let i of HOUSE){
+                    let dis=Infinity;
+                    let rod=false;
+                    let projection=null;
+                    for(let j of ROADS){
+                        let d=distToSegment(i,j.start,j.end);
+                       // console.log(`\t${j.id}->${d}`)
+                        if(d.dis<dis){
+                            dis=d.dis;
+                            rod=j;
+                            projection=d.point;
+                        }
+                    }
+                    //console.log(`${i.id}->${rod.id}`);
+                    //console.log(`\tnum:${houseNum(i,rod.start,projection,dis)}`);
+                    num=houseNum(i,rod.start,projection,dis);
+                    house_num_lst.push({y:i.y,x:i.x,house_num:num});
+                    game.scene.scenes[0].add.circle(i.x,i.y,20,0x000000);
+                    game.scene.scenes[0].add.text(i.x-10,i.y-10,""+num,{fontSize:15,strokeThickness:2}); 
+                }
+
+            }
+
+            const toCSV=(dict)=>{
+                const items = json3.items;
+                const replacer = (key, value) => value === null ? '' : value; // specify how you want to handle null values here
+                const header = Object.keys(dict);
+                const csv = [
+                header.join(','), // header row first
+                ...items.map(row => header.map(fieldName => JSON.stringify(row[fieldName], replacer)).join(','))
+                ].join('\r\n');
+                return csv;
+
+            }
+
+            document.getElementById("mode_save").onclick=()=>{
+                if(house_num_lst.length==0){
+                    alert("Please Compute the House num before exporintg!");
+                    return;
+                }
+                csv=JSON.stringify(house_num_lst);
+                let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(csv);
+                let dlAnchorElem = document.getElementById('downloadAnchorElem');
+                dlAnchorElem.setAttribute("href",     dataStr     );
+                dlAnchorElem.setAttribute("download", "file.json");
+                dlAnchorElem.click();
+            }
+        </script>
+    </body>
+</html>

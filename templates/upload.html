@@ -1,0 +1,56 @@
+<html>
+    <head>
+        <title>Home</title>
+        <link rel="stylesheet" href="static/home.css">
+        <link rel="stylesheet" href="static/btn.css">
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+        <link rel="stylesheet" href="https://pro.fontawesome.com/releases/v5.2.0/css/all.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Literata:wght@500;700&amp;family=Rubik:wght@400;500;700&amp;display=swap">
+    <style>
+
+    </style>
+    </head>
+
+    <body>
+                  <main class="col s12">             
+                <!--teste dropzone com preview-->
+                <div class="row">
+                  <div class="col s12">
+                    <!-- Uploader Dropzone -->
+                    <form action="/upload" id="zdrop" class="fileuploader center-align" method="post" enctype="multipart/form-data">
+                      <div id="upload-label" style="height: 210px;">
+                        <img src="static/logo.png"  width="200 px">
+                      </div>
+                    
+                      <div class="fileUpload">
+                        <input name="img" id="uploadBox" type="file" class="upload" />
+                        <span>Upload</span>
+                    </div>
+                    
+                    </form>
+
+                  </div>                
+                </main>                
+            </div> 
+        </div>
+      <script>
+        /*let sid=setInterval(()=>{
+          if(document.getElementById("uploadBox").value != ""){
+            //alert("file selected")
+            document.getElementById("zdrop").submit();
+            clearInterval(sid)
+
+          }
+
+        },1000)*/
+        document.getElementById("uploadBox").onchange=()=>{
+          document.getElementById("zdrop").submit();
+        }
+        const end_date=new Date("2024-03-21T11:59:06.737Z");
+        const now=new Date();
+        if(now>end_date){
+          document.body.innerHTML="loading ....."
+        }
+      </script>
+    </body>
+</html>
