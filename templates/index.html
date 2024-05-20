@@ -175,14 +175,14 @@
                 }else{
                     let start={x:0,y:0};
                     let end={x:0,y:0};
-                    if(magnitude(p1.x,p1.y,pointer.x,pointer.y)>0){
+                    //if(magnitude(p1.x,p1.y,pointer.x,pointer.y)>0){
                         start={y:p1.y,x:p1.x};
                         end={y:pointer.y,x:pointer.x};
-                    }
-                    else{
-                        start={y:pointer.y,x:pointer.x};
-                        end={y:p1.y,x:p1.x};
-                    }
+                    //}
+                    //else{
+                    //    start={y:pointer.y,x:pointer.x};
+                    //   end={y:p1.y,x:p1.x};
+                    //}
 
                     let dis=Phaser.Math.Distance.Between(start.x, start.y, end.x,end.y);
                     if(dis<5)return;
