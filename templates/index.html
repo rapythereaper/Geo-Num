@@ -191,7 +191,7 @@
                     ev.setLineWidth(3)
                     ev.isHouse=false;
                     let form_data=await onRoadAdd("Road-"+ROADS.length,Math.ceil(dis/PIXEL_SIZE));
-                    END_POINTS+=form_data.end;
+                    END_POINTS=form_data.end;
                     ROADS.push({id:ROADS.length,start:start,end:end,start_index:form_data.start,end_index:form_data.end})
                         
                 }
@@ -335,7 +335,7 @@
                     if(ev.isHouse)HOUSE.pop();
                     else{
                        let el=ROADS.pop();
-                       END_POINTS-=el.end_index;
+                       END_POINTS=el.start_index;
                     }
                     ev.destroy();
                 }
