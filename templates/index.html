@@ -60,8 +60,12 @@
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.80.0/phaser.js"></script>
         <script>
-            var END_POINTS=0;
+            var END_POINTS=0; 
             const PIXEL_SIZE=10;
+
+            /*
+                Display menu to add start and end point right after adding road on the map
+            */
             async function onRoadAdd(name,dis){
                 const { value: formValues } = await Swal.fire({
                 title: "Road Setup",
@@ -93,7 +97,7 @@
                     return formValues;
                 }
             }
-
+            /* return magnitude of  two vector*/
             function magnitude(x1,y1,x2,y2){
                 return (x1-x2)+(y1-y2);
             }
@@ -112,10 +116,12 @@
 
         var game = new Phaser.Game(config);
         const center={x:config.width/2,y:config.height/2};
-        let ROADS=[]//[{start:{x:0,y:0},end:{y:config.height,x:config.width}}];
-        let HOUSE=[]//[{x:center.x,y:center.y}];
-        let isHouseMode=true;
+        let ROADS=[]//[{start:{x:0,y:0},end:{y:config.height,x:config.width}}]; /* Store Roads List*/
+        let HOUSE=[]//[{x:center.x,y:center.y}]; /* store list of house inserted into map*/
+        let isHouseMode=true; 
         let history=[];
+
+        /* load  the image of map uploaded*/
         function preload (){
             this.load.image('map', '{{img_url}}');
         }
@@ -123,7 +129,7 @@
         const p1={x:0,y:0}
         function create (){
             let bd=this.add.image(center.x,center.y,"map").setScale(1);
-
+            /*
             this.input.keyboard.on("keyup-M",function (e) {
                 isHouseMode=!isHouseMode;
                 if(history.length==100)history.shift();
@@ -157,12 +163,18 @@
                 }
                 alert("check cosole!")
             })
-
+            */
+            /* get the pixel in the screen where the mouse button was pressed*/
             this.input.on('pointerdown', function (pointer){
                 p1.x=pointer.x;
                 p1.y=pointer.y;
                
             });
+
+            /* -> get pixel on screen where the mouser button was pressed and released
+                -> for house mode put the house at that point
+                -> for road mode draw a line between point (i.e mouse presse and mouse relased point)
+            */
             this.input.on('pointerup',async (pointer)=>{
                 if(history.length==100)history.shift();
                 let ev
@@ -212,6 +224,7 @@
 
             function sqr(x) { return x * x }
             function dist2(v, w) { return sqr(v.x - w.x) + sqr(v.y - w.y) }
+            /*return shortest distance between pint "p" to line segment "VW" */
             function distToSegmentSquared(p, v, w) {
                 var l2 = dist2(v, w);
                 if (l2 == 0) return dist2(p, v);
@@ -221,43 +234,33 @@
                 return {dis:dist2(p,point),
                         point:point};
             }
+            /*return shortest distance between pint "p" to line segment "VW" but without squaring*/
             function distToSegment(p, v, w) {
                 let r=distToSegmentSquared(p, v, w)
                 r.dis=Math.sqrt(r.dis);
                 return r ;
             }
 
-
-            function left_hnum(path_dist){
-                path_dist = Math.ceil(path_dist);
-                if ( path_dist % 2 == 0 )
-                        return path_dist+1;
-                else
-                        return path_dist;
-            }
-
-            function right_hnum(path_dist){
-                path_dist = Math.ceil(path_dist)
-                if(path_dist % 2 == 0)
-                    return path_dist;
-                else
-                    return path_dist + 1;
-            }
-
+            /* Generate the number of house(house_point ) base on the road(road_start, road_end),
+                projection_point( the point in the road where house projects)
+                offset( the end value of last inserted road)
+            */
             function houseNum(road_start,road_end,house_point,projection_point,offset){
                 let side=pointSideOfLine(road_start,road_end,house_point);
                 let dis=distanceBetweenPoints(road_start,projection_point);
                 dis=Math.round(dis/PIXEL_SIZE)+offset;
                 if(side=="left"){
-                    if(dis%2!=0)dis+=1;
+                    if(dis%2!=0)dis+=1; // give a even nnuumber 
                 }else if(side=="right"){
-                    if(dis%2==0)dis+=1;
+                    if(dis%2==0)dis+=1; // give odd number
                 }
                 let hnum=dis;
                 return hnum;
             }
 
-
+            /* Calculate the shortest distance between point and line segment, and 
+                also the point of intersection of shortst distance and linesegment i.e projection point    
+            */
             function shortestLineToPoint(lineStart, lineEnd, point) {
                 // Calculate the direction vector of the line segment
                 let dx = lineEnd.x - lineStart.x;
@@ -301,6 +304,7 @@
                 return Math.sqrt(dx * dx + dy * dy);
             }
 
+            /* Clculate weather a point lies on the left right or on the line segment */
             function pointSideOfLine(lineStart, lineEnd, point) {
                 // Calculate vectors representing the line segment and from lineStart to the given point
                 let dx1 = lineEnd.x - lineStart.x;
@@ -322,13 +326,15 @@
             }
         </script>
         <script>
+            // change the house mode to ture;
             document.getElementById("mode_house").onclick=()=>{
                 isHouseMode=true;
             }
+            // chage the house mode to false i.e road mode.
             document.getElementById("mode_road").onclick=()=>{
                 isHouseMode=false;
             }
-
+            // undo the recent made change on map
             document.getElementById("mode_undo").onclick=()=>{
                 let ev=history.pop();
                 if(ev){
@@ -341,6 +347,12 @@
                 }
             }
             let house_num_lst=[];
+            /* -> Loop through  houses 
+                -> calculate the shortest road to that house.
+                -> calcuate the house number with respect to the shorte road.
+                -> draw the generated number on the map.
+
+            */
             document.getElementById("mode_compute").onclick=()=>{
                 let num=[];
                 if(HOUSE.length==0){
@@ -375,7 +387,7 @@
 
             }
 
-            const toCSV=(dict)=>{
+            /*const toCSV=(dict)=>{
                 const items = json3.items;
                 const replacer = (key, value) => value === null ? '' : value; // specify how you want to handle null values here
                 const header = Object.keys(dict);
@@ -385,8 +397,10 @@
                 ].join('\r\n');
                 return csv;
 
-            }
+            }*/
 
+            /* encode the generated house number into js as download it.
+            */
             document.getElementById("mode_save").onclick=()=>{
                 if(house_num_lst.length==0){
                     alert("Please Compute the House num before exporintg!");
